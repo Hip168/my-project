@@ -1324,6 +1324,12 @@ async function addChiTietHoaDonItem() {
         alert('Không tìm thấy sản phẩm!');
         return;
     }
+
+    // Kiểm tra số lượng tồn kho
+    if (quantity > product.SoLuong) {
+        alert(`Số lượng tồn kho của sản phẩm "${product.TenSanPham}" chỉ còn ${product.SoLuong}. Không thể bán vượt quá số lượng này!`);
+        return;
+    }
     
     // Check if product is already in the list
     const existingRow = document.querySelector(`#added-items-list tr[data-product-id="${productId}"]`);

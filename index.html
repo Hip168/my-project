@@ -34,6 +34,10 @@
                 <i class="fas fa-cart-plus"></i>
                 <span>Nhập hàng</span>
             </button>
+            <button class="circle-btn" onclick="openTab('doanhthu')">
+                <i class="fas fa-chart-line"></i>
+                <span>Doanh thu</span>
+            </button>
         </div>
     </div>
     <div class="content">
@@ -422,6 +426,22 @@
                     <tbody id="import-order-list">
                     </tbody>
                 </table>
+            </div>
+        </div>
+
+        <div id="doanhthu" class="tab-content">
+            <div class="container">
+                <h2>Thống kê Doanh thu</h2>
+                <div style="font-size:1.2em; margin-bottom:18px;">
+                    Tổng doanh thu: <span id="tong-doanh-thu" style="color:#1976d2; font-weight:bold;">0</span> đ
+                </div>
+                <div style="margin-bottom:18px;">
+                    <button class="add-button" id="btn-doanhthu-ngay" onclick="showDoanhThu('ngay')">Theo ngày</button>
+                    <button class="add-button" id="btn-doanhthu-thang" onclick="showDoanhThu('thang')">Theo tháng</button>
+                    <button class="add-button" id="btn-doanhthu-nam" onclick="showDoanhThu('nam')">Theo năm</button>
+                </div>
+                <div id="doanhthu-bang"></div>
+                <canvas id="doanhthu-chart" style="margin-top:24px;max-width:100%;"></canvas>
             </div>
         </div>
     </div>

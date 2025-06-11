@@ -81,18 +81,6 @@ async function openTab(tabName) {
         document.getElementById('imported-items-list').innerHTML = '';
         document.getElementById('import-total-amount').value = '';
         fetchImportOrders();
-    } else if (tabName === 'doanhthu') {
-        if (!chartJsLoaded) {
-            const script = document.createElement('script');
-            script.src = "https://cdn.jsdelivr.net/npm/chart.js";
-            script.onload = () => {
-                chartJsLoaded = true;
-                loadDoanhThuTab();
-            };
-            document.body.appendChild(script);
-        } else {
-            loadDoanhThuTab();
-        }
     }
         }
 
@@ -1739,7 +1727,7 @@ async function generateNextImportId() {
 }
 
 async function addChiTietNhapHangItem() {
-             const productSelect = document.querySelector('.import-product-select');
+                         const productSelect = document.querySelector('.import-product-select');
     const quantityInput = document.querySelector('.import-quantity');
     const priceInput = document.querySelector('.import-price');
     const productId = productSelect.value;
@@ -1994,191 +1982,73 @@ async function deleteImportOrder(maDon) {
     }
 }
 
-// Tải Chart.js CDN khi vào tab doanhthu (chỉ tải 1 lần)
-let chartJsLoaded = false;
-let doanhThuChart = null;
-
-async function openTab(tabName) {
-    // Hide all tab contents
-    const tabContents = document.getElementsByClassName('tab-content');
-    for (let content of tabContents) {
-        content.classList.remove('active');
-    }
-
-            // Hide all forms when switching tabs
-            document.querySelectorAll('.data-form').forEach(form => form.style.display = 'none');
-            currentEditingEmployeeId = null;
-            currentEditingProductId = null;
-            currentEditingCustomerId = null;
-            currentEditingSupplierId = null; // Clear supplier editing ID
-
-            // Show the selected tab content
-    document.getElementById(tabName).classList.add('active');
-
-            // Update active state for sidebar buttons
-            const sidebarButtons = document.querySelectorAll('.sidebar button');
-            sidebarButtons.forEach(button => button.classList.remove('active'));
-            const activeButton = Array.from(sidebarButtons).find(button => button.onclick.toString().includes(`openTab('${tabName}')`));
-            if (activeButton) {
-                activeButton.classList.add('active');
-            }
-
-            // Fetch data for the newly opened tab
-            if (tabName === 'nhanvien') {
-                fetchEmployees();
-            } else if (tabName === 'sanpham') {
-                fetchProducts();
-            } else if (tabName === 'khachhang') {
-                fetchCustomers();
-            } else if (tabName === 'nhacungcap') { // Fetch suppliers when 'nhacungcap' tab is opened
-                fetchSuppliers();
-    } else if (tabName === 'hoadon') {
-        populateInvoiceDropdowns();
-        // Tự động sinh mã hóa đơn
-        const invoiceIdInput = document.getElementById('invoice-id');
-        if (invoiceIdInput) {
-            invoiceIdInput.value = await generateNextInvoiceId();
-        }
-        // Tự động set ngày hôm nay cho ngày lập
-        const invoiceDateInput = document.getElementById('invoice-date');
-        if (invoiceDateInput) {
-            const today = new Date();
-            const yyyy = today.getFullYear();
-            const mm = String(today.getMonth() + 1).padStart(2, '0');
-            const dd = String(today.getDate()).padStart(2, '0');
-            invoiceDateInput.value = `${yyyy}-${mm}-${dd}`;
-        }
-        await populateProductDropdown();
-        fetchInvoices();
-    } else if (tabName === 'nhaphang') {
-        // Tự động sinh mã phiếu nhập
-        const importIdInput = document.getElementById('import-id');
-        if (importIdInput) {
-            importIdInput.value = await generateNextImportId();
-        }
-        // Tự động set ngày hôm nay cho ngày nhập
-        const importDateInput = document.getElementById('import-date');
-        if (importDateInput) {
-            const today = new Date();
-            const yyyy = today.getFullYear();
-            const mm = String(today.getMonth() + 1).padStart(2, '0');
-            const dd = String(today.getDate()).padStart(2, '0');
-            importDateInput.value = `${yyyy}-${mm}-${dd}`;
-        }
-        await populateImportDropdowns();
-        // Reset bảng tạm
-        document.getElementById('imported-items-list').innerHTML = '';
-        document.getElementById('import-total-amount').value = '';
-        fetchImportOrders();
-    } else if (tabName === 'doanhthu') {
-        if (!chartJsLoaded) {
-            const script = document.createElement('script');
-            script.src = "https://cdn.jsdelivr.net/npm/chart.js";
-            script.onload = () => {
-                chartJsLoaded = true;
-                loadDoanhThuTab();
-            };
-            document.body.appendChild(script);
-        } else {
-            loadDoanhThuTab();
-        }
-    }
-        }
-
-        async function loadDoanhThuTab() {
-    await tinhTongDoanhThu();
-    showDoanhThu('ngay');
+/**
+ * Đóng modal chi tiết đơn nhập hàng
+ */
+function closeImportDetailModal() {
+    document.getElementById('import-detail-modal').style.display = 'none';
 }
 
-async function tinhTongDoanhThu() {
+/**
+ * Hiển thị chi tiết đơn nhập hàng
+ * @param {number} maDon - Mã đơn nhập hàng cần xem chi tiết
+ */
+async function showImportOrderDetail(maDon) {
     try {
-        const res = await fetch('https://btldbs-api.onrender.com/api/hoadon');
-        const data = await res.json();
-        let total = 0;
-        data.forEach(hd => {
-            total += Number(hd.TongTien) || 0;
-        });
-        document.getElementById('tong-doanh-thu').textContent = total.toLocaleString('vi-VN');
-    } catch {
-        document.getElementById('tong-doanh-thu').textContent = '0';
-    }
-}
+        // Lấy toàn bộ chi tiết nhập hàng
+        const response = await fetch('https://btldbs-api.onrender.com/api/chitietnhaphang');
+        const chiTietList = await response.json();
+        const chiTietDonNhap = chiTietList.filter(item => item.MaDon === maDon);
 
-async function showDoanhThu(type) {
-    // type: 'ngay', 'thang', 'nam'
-    const res = await fetch('https://btldbs-api.onrender.com/api/hoadon');
-    const data = await res.json();
-    let group = {};
-    let labels = [];
-    let values = [];
+        // Lấy toàn bộ sản phẩm
+        const spRes = await fetch('https://btldbs-api.onrender.com/api/sanpham');
+        const spList = await spRes.json();
 
-    if (type === 'ngay') {
-        data.forEach(hd => {
-            const ngay = (hd.Ngay.length === 10) ? hd.Ngay : (new Date(hd.Ngay)).toISOString().slice(0,10);
-            group[ngay] = (group[ngay] || 0) + Number(hd.TongTien || 0);
-        });
-        labels = Object.keys(group).sort();
-        values = labels.map(l => group[l]);
-        renderDoanhThuTable(labels, values, 'Ngày', 'Doanh thu');
-        renderDoanhThuChart(labels, values, 'Doanh thu theo ngày');
-    } else if (type === 'thang') {
-        data.forEach(hd => {
-            let d = new Date(hd.Ngay);
-            let label = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-            group[label] = (group[label] || 0) + Number(hd.TongTien || 0);
-        });
-        labels = Object.keys(group).sort();
-        values = labels.map(l => group[l]);
-        renderDoanhThuTable(labels, values, 'Tháng', 'Doanh thu');
-        renderDoanhThuChart(labels, values, 'Doanh thu theo tháng');
-    } else if (type === 'nam') {
-        data.forEach(hd => {
-            let d = new Date(hd.Ngay);
-            let label = `${d.getFullYear()}`;
-            group[label] = (group[label] || 0) + Number(hd.TongTien || 0);
-        });
-        labels = Object.keys(group).sort();
-        values = labels.map(l => group[l]);
-        renderDoanhThuTable(labels, values, 'Năm', 'Doanh thu');
-        renderDoanhThuChart(labels, values, 'Doanh thu theo năm');
-    }
-}
+        let content = `
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr>
+                        <th>Mã sản phẩm</th>
+                        <th>Tên sản phẩm</th>
+                        <th>Số lượng</th>
+                        <th>Đơn giá nhập</th>
+                        <th>Thành tiền</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
 
-function renderDoanhThuTable(labels, values, col1, col2) {
-    let html = `<table style="width:100%;margin-top:16px;">
-        <thead><tr><th>${col1}</th><th>${col2} (VNĐ)</th></tr></thead><tbody>`;
-    for (let i = 0; i < labels.length; i++) {
-        html += `<tr><td>${labels[i]}</td><td>${values[i].toLocaleString('vi-VN')}</td></tr>`;
-    }
-    html += '</tbody></table>';
-    document.getElementById('doanhthu-bang').innerHTML = html;
-}
-
-function renderDoanhThuChart(labels, values, title) {
-    const ctx = document.getElementById('doanhthu-chart').getContext('2d');
-    if (doanhThuChart) doanhThuChart.destroy();
-    doanhThuChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: title,
-                data: values,
-                borderColor: '#1976d2',
-                backgroundColor: 'rgba(25,118,210,0.08)',
-                fill: true,
-                tension: 0.2
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: { display: false },
-                title: { display: true, text: title }
-            },
-            scales: {
-                y: { beginAtZero: true }
-            }
+        for (const chiTiet of chiTietDonNhap) {
+            const sanPham = spList.find(sp => sp.MaSanPham === chiTiet.MaSanPham);
+            content += `
+                <tr>
+                    <td>${String(chiTiet.MaSanPham).padStart(6, '0')}</td>
+                    <td>${sanPham ? sanPham.TenSanPham : ''}</td>
+                    <td>${chiTiet.SoLuong}</td>
+                    <td>${Number(chiTiet.DonGia).toLocaleString('vi-VN')} VNĐ</td>
+                    <td>${Number(chiTiet.SoLuong * chiTiet.DonGia).toLocaleString('vi-VN')} VNĐ</td>
+                </tr>
+            `;
         }
-    });
+
+        content += `
+                </tbody>
+            </table>
+        `;
+
+        document.getElementById('import-detail-content').innerHTML = content;
+        document.getElementById('import-detail-modal').style.display = 'block';
+    } catch (error) {
+        console.error('Lỗi khi lấy chi tiết đơn nhập hàng:', error);
+        alert('Có lỗi xảy ra khi lấy chi tiết đơn nhập hàng.');
+    }
 }
+
+// --- Sidebar active state ---
+document.querySelectorAll('.sidebar-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.sidebar-btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    // Gọi openTab hoặc logic chuyển tab ở đây
+  });
+});

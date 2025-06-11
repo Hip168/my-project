@@ -4,41 +4,39 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản lý Cửa Hàng</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="sidebar">
-        <div class="sidebar-circle">
-            <button class="circle-btn" onclick="openTab('khachhang')">
-                <i class="fas fa-user"></i>
-                <span>Khách Hàng</span>
-            </button>
-            <button class="circle-btn" onclick="openTab('nhanvien')">
-                <i class="fas fa-users"></i>
-                <span>Nhân viên</span>
-            </button>
-            <button class="circle-btn" onclick="openTab('sanpham')">
-                <i class="fas fa-box"></i>
-                <span>Sản phẩm</span>
-            </button>
-            <button class="circle-btn" onclick="openTab('nhacungcap')">
-                <i class="fas fa-truck"></i>
-                <span>Nhà cung cấp</span>
-            </button>
-            <button class="circle-btn" onclick="openTab('hoadon')">
-                <i class="fas fa-file-invoice"></i>
-                <span>Hóa đơn</span>
-            </button>
-            <button class="circle-btn" onclick="openTab('nhaphang')">
-                <i class="fas fa-cart-plus"></i>
-                <span>Nhập hàng</span>
-            </button>
-            <button class="circle-btn" onclick="openTab('doanhthu')">
-                <i class="fas fa-chart-line"></i>
-                <span>Doanh thu</span>
-            </button>
-        </div>
+        <button class="sidebar-btn active" onclick="openTab('khachhang')">
+            <span class="sidebar-icon"><i class="fa fa-user"></i></span>
+            <span>Khách Hàng</span>
+        </button>
+        <button class="sidebar-btn" onclick="openTab('nhanvien')">
+            <span class="sidebar-icon"><i class="fa fa-users"></i></span>
+            <span>Nhân viên</span>
+        </button>
+        <button class="sidebar-btn" onclick="openTab('sanpham')">
+            <span class="sidebar-icon"><i class="fa fa-box"></i></span>
+            <span>Sản phẩm</span>
+        </button>
+        <button class="sidebar-btn" onclick="openTab('nhacungcap')">
+            <span class="sidebar-icon"><i class="fa fa-truck"></i></span>
+            <span>Nhà cung cấp</span>
+        </button>
+        <button class="sidebar-btn" onclick="openTab('hoadon')">
+            <span class="sidebar-icon"><i class="fa fa-file-invoice"></i></span>
+            <span>Hóa đơn</span>
+        </button>
+        <button class="sidebar-btn" onclick="openTab('nhaphang')">
+            <span class="sidebar-icon"><i class="fa fa-shopping-cart"></i></span>
+            <span>Nhập hàng</span>
+        </button>
+        <button class="sidebar-btn" onclick="openTab('doanhthu')">
+            <span class="sidebar-icon"><i class="fa fa-chart-line"></i></span>
+            <span>Doanh thu</span>
+        </button>
     </div>
     <div class="content">
         <div id="khachhang" class="tab-content">
@@ -271,8 +269,8 @@
 
                     <button type="button" onclick="updateSupplier()">Cập nhật nhà cung cấp</button>
                 </form>
-            </div>
         </div>
+    </div>
 
         <div id="hoadon" class="tab-content">
             <div class="container">
@@ -428,22 +426,6 @@
                 </table>
             </div>
         </div>
-
-        <div id="doanhthu" class="tab-content">
-            <div class="container">
-                <h2>Thống kê Doanh thu</h2>
-                <div style="font-size:1.2em; margin-bottom:18px;">
-                    Tổng doanh thu: <span id="tong-doanh-thu" style="color:#1976d2; font-weight:bold;">0</span> đ
-                </div>
-                <div style="margin-bottom:18px;">
-                    <button class="add-button" id="btn-doanhthu-ngay" onclick="showDoanhThu('ngay')">Theo ngày</button>
-                    <button class="add-button" id="btn-doanhthu-thang" onclick="showDoanhThu('thang')">Theo tháng</button>
-                    <button class="add-button" id="btn-doanhthu-nam" onclick="showDoanhThu('nam')">Theo năm</button>
-                </div>
-                <div id="doanhthu-bang"></div>
-                <canvas id="doanhthu-chart" style="margin-top:24px;max-width:100%;"></canvas>
-            </div>
-        </div>
     </div>
 
     <script src="script.js"></script>
@@ -454,6 +436,17 @@
             <span class="close" onclick="closeInvoiceDetailModal()">&times;</span>
             <h3>Chi tiết hóa đơn</h3>
             <div id="invoice-detail-content">
+                <!-- Details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for import order details -->
+    <div id="import-detail-modal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <span class="close" onclick="closeImportDetailModal()">&times;</span>
+            <h3>Chi tiết đơn nhập hàng</h3>
+            <div id="import-detail-content">
                 <!-- Details will be loaded here -->
             </div>
         </div>

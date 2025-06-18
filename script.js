@@ -1,3 +1,4 @@
+const API_BASE = "https://btldbs-api.onrender.com/api";
 let currentEditingEmployeeId = null;
         let currentEditingProductId = null;
         let currentEditingCustomerId = null;
@@ -66,6 +67,7 @@ async function openTab(tabName) {
         const importIdInput = document.getElementById('import-id');
         if (importIdInput) {
             importIdInput.value = await generateNextImportId();
+            if (!importIdInput.value) importIdInput.value = '000001';
         }
         // Tự động set ngày hôm nay cho ngày nhập
         const importDateInput = document.getElementById('import-date');
@@ -81,6 +83,8 @@ async function openTab(tabName) {
         document.getElementById('imported-items-list').innerHTML = '';
         document.getElementById('import-total-amount').value = '';
         fetchImportOrders();
+    } else if (tabName === 'thongke') {
+        await initializeStatistics();
     }
         }
 
@@ -90,50 +94,14 @@ async function openTab(tabName) {
          * @param {object} [employeeData=null] - Employee data to populate the edit form.
          */
         async function toggleEmployeeForm(formType, employeeData = null) {
-            const addForm = document.getElementById('add-employee-form');
-            const editForm = document.getElementById('edit-employee-form');
-
-            // Hide other forms when dealing with employee forms
-            document.getElementById('add-product-form').style.display = 'none';
-            document.getElementById('edit-product-form').style.display = 'none';
-            document.getElementById('add-customer-form').style.display = 'none';
-            document.getElementById('edit-customer-form').style.display = 'none';
-            document.getElementById('add-supplier-form').style.display = 'none'; // Hide supplier forms
-            document.getElementById('edit-supplier-form').style.display = 'none'; // Hide supplier forms
-            currentEditingProductId = null;
-            currentEditingCustomerId = null;
-            currentEditingSupplierId = null;
-
+            const modal = document.getElementById('add-employee-modal');
             if (formType === 'add') {
-                editForm.style.display = 'none'; // Ensure edit form is hidden
-                addForm.style.display = addForm.style.display === 'none' ? 'block' : 'none'; // Toggle add form visibility
-                currentEditingEmployeeId = null; // Clear editing ID when opening add form
-
-                // If showing the add form, generate the next ID
-                if (addForm.style.display === 'block') {
                     const nextId = await generateNextEmployeeId();
                     document.getElementById('new-employee-id').value = nextId;
-                    document.getElementById('new-employee-name').focus(); // Focus on the first input field
-                } else {
-                    // Reset the add form when hiding it
-                    addForm.reset(); // Correctly reset the form
-                }
-
+                modal.style.display = 'block';
             } else if (formType === 'edit' && employeeData) {
-                // If the edit form is currently open AND it's for the same employee, close it
-                if (editForm.style.display === 'block' && currentEditingEmployeeId === employeeData.IdNhanVien) {
-                    editForm.style.display = 'none';
-                    currentEditingEmployeeId = null; // Clear editing ID
-                } else {
-                    // Otherwise, hide the add form (if open) and show the edit form with new data
-                    addForm.style.display = 'none';
-                    editForm.style.display = 'block';
                     populateEditEmployeeForm(employeeData);
-                }
-            } else { // Case for no specific formType or to hide both forms
-                addForm.style.display = 'none';
-                editForm.style.display = 'none';
-                currentEditingEmployeeId = null;
+                document.getElementById('edit-employee-modal').style.display = 'block';
             }
         }
 
@@ -157,50 +125,14 @@ async function openTab(tabName) {
          * @param {object} [productData=null] - Product data to populate the edit form.
          */
         async function toggleProductForm(formType, productData = null) {
-            const addForm = document.getElementById('add-product-form');
-            const editForm = document.getElementById('edit-product-form');
-
-            // Hide other forms when dealing with product forms
-            document.getElementById('add-employee-form').style.display = 'none';
-            document.getElementById('edit-employee-form').style.display = 'none';
-            document.getElementById('add-customer-form').style.display = 'none';
-            document.getElementById('edit-customer-form').style.display = 'none';
-            document.getElementById('add-supplier-form').style.display = 'none'; // Hide supplier forms
-            document.getElementById('edit-supplier-form').style.display = 'none'; // Hide supplier forms
-            currentEditingEmployeeId = null;
-            currentEditingCustomerId = null;
-            currentEditingSupplierId = null;
-
+            const modal = document.getElementById('add-product-modal');
             if (formType === 'add') {
-                editForm.style.display = 'none'; // Ensure edit form is hidden
-                addForm.style.display = addForm.style.display === 'none' ? 'block' : 'none'; // Toggle add form visibility
-                currentEditingProductId = null; // Clear editing ID when opening add form
-
-                // If showing the add form, generate the next ID
-                if (addForm.style.display === 'block') {
                     const nextId = await generateNextProductId();
                     document.getElementById('new-product-id').value = nextId;
-                    document.getElementById('new-product-name').focus(); // Focus on the first input field
-                } else {
-                    // Reset the add form when hiding it
-                    addForm.reset(); // Correctly reset the form
-                }
-
+                modal.style.display = 'block';
             } else if (formType === 'edit' && productData) {
-                // If the edit form is currently open AND it's for the same product, close it
-                if (editForm.style.display === 'block' && currentEditingProductId === productData.MaSanPham) {
-                    editForm.style.display = 'none';
-                    currentEditingProductId = null; // Clear editing ID
-                } else {
-                    // Otherwise, hide the add form (if open) and show the edit form with new data
-                    addForm.style.display = 'none';
-                    editForm.style.display = 'block';
                     populateEditProductForm(productData);
-                }
-            } else { // Case for no specific formType or to hide both forms
-                addForm.style.display = 'none';
-                editForm.style.display = 'none';
-                currentEditingProductId = null;
+                document.getElementById('edit-product-modal').style.display = 'block';
             }
         }
 
@@ -223,51 +155,21 @@ async function openTab(tabName) {
          * @param {object} [customerData=null] - Customer data to populate the edit form.
          */
         async function toggleCustomerForm(formType, customerData = null) {
-            const addForm = document.getElementById('add-customer-form');
-            const editForm = document.getElementById('edit-customer-form');
-
-            // Hide other forms when dealing with customer forms
-            document.getElementById('add-employee-form').style.display = 'none';
-            document.getElementById('edit-employee-form').style.display = 'none';
-            document.getElementById('add-product-form').style.display = 'none';
-            document.getElementById('edit-product-form').style.display = 'none';
-            document.getElementById('add-supplier-form').style.display = 'none'; // Hide supplier forms
-            document.getElementById('edit-supplier-form').style.display = 'none'; // Hide supplier forms
-            currentEditingEmployeeId = null;
-            currentEditingProductId = null;
-            currentEditingSupplierId = null;
-
+            const modal = document.getElementById('add-customer-modal');
             if (formType === 'add') {
-                editForm.style.display = 'none'; // Ensure edit form is hidden
-                addForm.style.display = addForm.style.display === 'none' ? 'block' : 'none'; // Toggle add form visibility
-                currentEditingCustomerId = null; // Clear editing ID when opening add form
-
-                // If showing the add form, generate the next ID
-                if (addForm.style.display === 'block') {
                     const nextId = await generateNextCustomerId();
                     document.getElementById('new-customer-id').value = nextId;
-                    document.getElementById('new-customer-name').focus(); // Focus on the first input field
-                } else {
-                    // Reset the add form when hiding it
-                    addForm.reset(); // Correctly reset the form
-                }
-
+                modal.style.display = 'block';
             } else if (formType === 'edit' && customerData) {
-                // If the edit form is currently open AND it's for the same customer, close it
-                if (editForm.style.display === 'block' && currentEditingCustomerId === customerData.IdKhachHang) {
-                    editForm.style.display = 'none';
-                    currentEditingCustomerId = null; // Clear editing ID
-                } else {
-                    // Otherwise, hide the add form (if open) and show the edit form with new data
-                    addForm.style.display = 'none';
-                    editForm.style.display = 'block';
                     populateEditCustomerForm(customerData);
+                document.getElementById('edit-customer-modal').style.display = 'block';
                 }
-            } else { // Case for no specific formType or to hide both forms
-                addForm.style.display = 'none';
-                editForm.style.display = 'none';
-                currentEditingCustomerId = null;
             }
+
+        function closeAddCustomerModal() {
+            const modal = document.getElementById('add-customer-modal');
+            if (modal) modal.style.display = 'none';
+            // Không reset form ở đây!
         }
 
         /**
@@ -287,50 +189,14 @@ async function openTab(tabName) {
          * @param {object} [supplierData=null] - Supplier data to populate the edit form.
          */
         async function toggleSupplierForm(formType, supplierData = null) {
-            const addForm = document.getElementById('add-supplier-form');
-            const editForm = document.getElementById('edit-supplier-form');
-
-            // Hide other forms when dealing with supplier forms
-            document.getElementById('add-employee-form').style.display = 'none';
-            document.getElementById('edit-employee-form').style.display = 'none';
-            document.getElementById('add-product-form').style.display = 'none';
-            document.getElementById('edit-product-form').style.display = 'none';
-            document.getElementById('add-customer-form').style.display = 'none';
-            document.getElementById('edit-customer-form').style.display = 'none';
-            currentEditingEmployeeId = null;
-            currentEditingProductId = null;
-            currentEditingCustomerId = null;
-
+            const modal = document.getElementById('add-supplier-modal');
             if (formType === 'add') {
-                editForm.style.display = 'none'; // Ensure edit form is hidden
-                addForm.style.display = addForm.style.display === 'none' ? 'block' : 'none'; // Toggle add form visibility
-                currentEditingSupplierId = null; // Clear editing ID when opening add form
-
-                // If showing the add form, generate the next ID
-                if (addForm.style.display === 'block') {
                     const nextId = await generateNextSupplierId();
                     document.getElementById('new-supplier-id').value = nextId;
-                    document.getElementById('new-supplier-company-name').focus(); // Focus on the first input field
-                } else {
-                    // Reset the add form when hiding it
-                    addForm.reset(); // Correctly reset the form
-                }
-
+                modal.style.display = 'block';
             } else if (formType === 'edit' && supplierData) {
-                // If the edit form is currently open AND it's for the same supplier, close it
-                if (editForm.style.display === 'block' && currentEditingSupplierId === supplierData.IdNhaCungCap) {
-                    editForm.style.display = 'none';
-                    currentEditingSupplierId = null; // Clear editing ID
-                } else {
-                    // Otherwise, hide the add form (if open) and show the edit form with new data
-                    addForm.style.display = 'none';
-                    editForm.style.display = 'block';
                     populateEditSupplierForm(supplierData);
-                }
-            } else { // Case for no specific formType or to hide both forms
-                addForm.style.display = 'none';
-                editForm.style.display = 'none';
-                currentEditingSupplierId = null;
+                document.getElementById('edit-supplier-modal').style.display = 'block';
             }
         }
 
@@ -352,11 +218,12 @@ async function openTab(tabName) {
          * @returns {number} The calculated age.
          */
         function calculateAge(dobStr) {
-            const birthDate = new Date(dobStr);
+            const dob = new Date(dobStr);
             const today = new Date();
-            let age = today.getFullYear() - birthDate.getFullYear();
-            const monthDiff = today.getMonth() - birthDate.getMonth();
-            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+            let age = today.getFullYear() - dob.getFullYear();
+            const monthDiff = today.getMonth() - dob.getMonth();
+            
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
                 age--;
             }
             return age;
@@ -400,25 +267,16 @@ async function openTab(tabName) {
          */
         async function generateNextEmployeeId() {
             try {
-                console.log('Generating next employee ID...');
-                const response = await fetch('https://btldbs-api.onrender.com/api/nhanvien');
-                if (!response.ok) {
-                    throw new Error('Network response was not ok when fetching employee IDs');
+                const response = await fetch(`${API_BASE}/nhanvien`);
+                const employees = await response.json();
+                if (employees.length === 0) {
+                    return 1;
                 }
-                const data = await response.json();
-                console.log('Existing employee IDs fetched for generation:', data.map(emp => emp.IdNhanVien));
-                let maxId = 0;
-                if (data && data.length > 0) {
-                    // Map IDs to numbers and find the maximum
-                    maxId = Math.max(...data.map(emp => emp.IdNhanVien));
-                }
-                const nextId = maxId + 1;
-                console.log('Next generated employee ID:', String(nextId).padStart(6, '0'));
-                return String(nextId).padStart(6, '0'); // Format as 000001
+                const maxId = Math.max(...employees.map(emp => emp.IdNhanVien));
+                return maxId + 1;
             } catch (error) {
                 console.error('Error generating next employee ID:', error);
-                // Instead of alert, use a custom message box or console log for non-critical errors
-                return '';
+                return 1;
             }
         }
 
@@ -429,25 +287,16 @@ async function openTab(tabName) {
          */
         async function generateNextProductId() {
             try {
-                console.log('Generating next product ID...');
-                const response = await fetch('https://btldbs-api.onrender.com/api/sanpham');
-                if (!response.ok) {
-                    throw new Error('Network response was not ok when fetching product IDs');
+                const response = await fetch(`${API_BASE}/sanpham`);
+                const products = await response.json();
+                if (products.length === 0) {
+                    return 1;
                 }
-                const data = await response.json();
-                console.log('Existing product IDs fetched for generation:', data.map(prod => prod.MaSanPham));
-                let maxId = 0;
-                if (data && data.length > 0) {
-                    // Map IDs to numbers and find the maximum
-                    maxId = Math.max(...data.map(prod => prod.MaSanPham));
-                }
-                const nextId = maxId + 1;
-                console.log('Next generated product ID:', String(nextId).padStart(6, '0'));
-                return String(nextId).padStart(6, '0'); // Format as 000001
+                const maxId = Math.max(...products.map(p => p.MaSanPham));
+                return maxId + 1;
             } catch (error) {
                 console.error('Error generating next product ID:', error);
-                // Instead of alert, use a custom message box or console log for non-critical errors
-                return '';
+                return 1;
             }
         }
 
@@ -457,24 +306,16 @@ async function openTab(tabName) {
          */
         async function generateNextCustomerId() {
             try {
-                console.log('Generating next customer ID...');
-                const response = await fetch('https://btldbs-api.onrender.com/api/khachhang'); // Assuming API endpoint for customers
-                if (!response.ok) {
-                    throw new Error('Network response was not ok when fetching customer IDs');
+                const response = await fetch(`${API_BASE}/khachhang`);
+                const customers = await response.json();
+                if (customers.length === 0) {
+                    return 1;
                 }
-                const data = await response.json();
-                console.log('Existing customer IDs fetched for generation:', data.map(cust => cust.IdKhachHang));
-                let maxId = 0;
-                if (data && data.length > 0) {
-                    // Map IDs to numbers and find the maximum
-                    maxId = Math.max(...data.map(cust => cust.IdKhachHang));
-                }
-                const nextId = maxId + 1;
-                console.log('Next generated customer ID:', String(nextId).padStart(6, '0'));
-                return String(nextId).padStart(6, '0'); // Format as 000001
+                const maxId = Math.max(...customers.map(c => c.IdKhachHang));
+                return maxId + 1;
             } catch (error) {
                 console.error('Error generating next customer ID:', error);
-                return '';
+                return 1;
             }
         }
 
@@ -484,24 +325,16 @@ async function openTab(tabName) {
          */
         async function generateNextSupplierId() {
             try {
-                console.log('Generating next supplier ID...');
-                const response = await fetch('https://btldbs-api.onrender.com/api/nhacungcap'); // Assuming API endpoint for suppliers
-                if (!response.ok) {
-                    throw new Error('Network response was not ok when fetching supplier IDs');
+                const response = await fetch(`${API_BASE}/nhacungcap`);
+                const suppliers = await response.json();
+                if (suppliers.length === 0) {
+                    return 1;
                 }
-                const data = await response.json();
-                console.log('Existing supplier IDs fetched for generation:', data.map(sup => sup.IdNhaCungCap));
-                let maxId = 0;
-                if (data && data.length > 0) {
-                    // Map IDs to numbers and find the maximum
-                    maxId = Math.max(...data.map(sup => sup.IdNhaCungCap));
-                }
-                const nextId = maxId + 1;
-                console.log('Next generated supplier ID:', String(nextId).padStart(6, '0'));
-                return String(nextId).padStart(6, '0'); // Format as 000001
+                const maxId = Math.max(...suppliers.map(s => s.IdNhaCungCap));
+                return maxId + 1;
             } catch (error) {
                 console.error('Error generating next supplier ID:', error);
-                return '';
+                return 1;
             }
         }
 
@@ -509,55 +342,45 @@ async function openTab(tabName) {
          * Handles adding a new employee to the database via API.
          */
         async function addEmployee() {
-            // ID is now auto-generated and readonly, so we get it from the input
             const id = document.getElementById('new-employee-id').value;
             const name = document.getElementById('new-employee-name').value;
             const position = document.getElementById('new-employee-position').value;
-            const dobInput = document.getElementById('new-employee-dob').value;
+            const dob = document.getElementById('new-employee-dob').value;
             const address = document.getElementById('new-employee-address').value;
             const salary = document.getElementById('new-employee-salary').value;
 
-            // Basic validation
-            if (!id || !name || !position || !dobInput || !address || !salary) {
-                alert('Vui lòng điền đầy đủ thông tin nhân viên.'); // Using alert as a simple fallback
+            if (!name || !position || !dob || !address || !salary) {
+                alert('Vui lòng điền đầy đủ thông tin!');
                 return;
             }
 
-            const newEmployee = {
-                IdNhanVien: parseInt(id),
-                Ten: name,
-                ChucVu: position,
-                NgayThangNamSinh: dobInput, // API expects YYYY-MM-DD
-                DiaChi: address,
-                Luong: parseFloat(salary),
-                Tuoi: calculateAge(dobInput)
-            };
-
-            console.log('Attempting to add new employee:', newEmployee);
-
             try {
-                const response = await fetch('https://btldbs-api.onrender.com/api/nhanvien', {
+                const response = await fetch(`${API_BASE}/nhanvien`, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify(newEmployee)
+                    body: JSON.stringify({
+                        IdNhanVien: parseInt(id),
+                        Ten: name,
+                        ChucVu: position,
+                        NgayThangNamSinh: dob,
+                        DiaChi: address,
+                        Luong: parseFloat(salary)
+                    })
                 });
 
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(`Lỗi thêm nhân viên: ${response.status} - ${errorText}`);
+                if (response.ok) {
+                    closeAddEmployeeModal();
+                fetchEmployees();
+                alert('Thêm nhân viên thành công!');
+                } else {
+                    const error = await response.json();
+                    alert('Lỗi: ' + error.error);
                 }
-                const result = await response.json(); // Assuming API returns JSON on success
-                console.log('Employee added successfully:', result);
-
-                fetchEmployees(); // Refresh the table
-                toggleEmployeeForm('add'); // Close the form
-                document.getElementById('add-employee-form').reset(); // Correctly reset the form fields
-                alert('Thêm nhân viên thành công!'); // Using alert as a simple fallback
             } catch (error) {
-                console.error('Lỗi khi thêm nhân viên:', error);
-                alert('Có lỗi xảy ra khi thêm nhân viên.'); // Using alert as a simple fallback
+                console.error('Error adding employee:', error);
+                alert('Có lỗi xảy ra khi thêm nhân viên!');
             }
         }
 
@@ -565,54 +388,46 @@ async function openTab(tabName) {
          * Handles updating an existing employee in the database via API.
          */
         async function updateEmployee() {
-            const id = document.getElementById('edit-employee-id').value;
-            const name = document.getElementById('edit-employee-name').value;
-            const position = document.getElementById('edit-employee-position').value;
-            const dobInput = document.getElementById('edit-employee-dob').value;
-            const address = document.getElementById('edit-employee-address').value;
-            const salary = document.getElementById('edit-employee-salary').value;
-
-            // Basic validation
-            if (!name || !position || !dobInput || !address || !salary) {
-                alert('Vui lòng điền đầy đủ thông tin.'); // Using alert as a simple fallback
-                return;
-            }
-
-            const updatedEmployee = {
-                IdNhanVien: parseInt(id),
-                Ten: name,
-                ChucVu: position,
-                NgayThangNamSinh: dobInput, // API expects YYYY-MM-DD
-                DiaChi: address,
-                Luong: parseFloat(salary),
-                Tuoi: calculateAge(dobInput)
+            const form = document.getElementById('edit-employee-form-modal');
+            const id = parseInt(form.dataset.employeeId, 10);
+            const oldName = form.dataset.oldName;
+            const oldPosition = form.dataset.oldPosition;
+            const oldDob = form.dataset.oldDob;
+            const oldAddress = form.dataset.oldAddress;
+            const oldSalary = form.dataset.oldSalary;
+            const name = document.getElementById('edit-employee-name').value.trim();
+            const position = document.getElementById('edit-employee-position').value.trim();
+            const dob = document.getElementById('edit-employee-dob').value.trim();
+            const address = document.getElementById('edit-employee-address').value.trim();
+            const salary = document.getElementById('edit-employee-salary').value.trim();
+            const finalName = name !== '' ? name : oldName;
+            const finalPosition = position !== '' ? position : oldPosition;
+            const finalDob = dob !== '' ? dob : oldDob;
+            const finalAddress = address !== '' ? address : oldAddress;
+            const finalSalary = salary !== '' ? salary : oldSalary;
+            const body = {
+                IdNhanVien: id,
+                Ten: finalName,
+                ChucVu: finalPosition,
+                NgayThangNamSinh: finalDob,
+                DiaChi: finalAddress,
+                Luong: parseFloat(finalSalary)
             };
-
-            console.log('Attempting to update employee:', updatedEmployee);
-
             try {
-                const response = await fetch(`https://btldbs-api.onrender.com/api/nhanvien/${currentEditingEmployeeId}`, {
+                const response = await fetch(`${API_BASE}/nhanvien/${id}`, {
                     method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(updatedEmployee)
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
                 });
-
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(`Lỗi cập nhật nhân viên: ${response.status} - ${errorText}`);
+                const resText = await response.text();
+                if (response.ok) {
+                    await fetchEmployees();
+                    closeEditEmployeeModal();
+                } else {
+                    alert('Có lỗi xảy ra khi cập nhật nhân viên: ' + resText);
                 }
-                const result = await response.json(); // Assuming API returns JSON on success
-                console.log('Employee updated successfully:', result);
-
-                fetchEmployees(); // Refresh the table
-                toggleEmployeeForm(); // Hide both forms
-                currentEditingEmployeeId = null; // Clear editing ID
-                alert('Cập nhật nhân viên thành công!'); // Using alert as a simple fallback
             } catch (error) {
-                console.error('Lỗi khi cập nhật nhân viên:', error);
-                alert('Có lỗi xảy ra khi cập nhật nhân viên.'); // Using alert as a simple fallback
+                alert('Có lỗi xảy ra khi cập nhật nhân viên!');
             }
         }
 
@@ -622,12 +437,11 @@ async function openTab(tabName) {
          */
         async function deleteEmployee(button) {
             const row = button.parentNode.parentNode;
-            // Get ID from the first cell, remove leading zeros for API call if needed
             const employeeId = parseInt(row.cells[0].textContent);
 
             console.log(`Attempting to delete employee with ID: ${employeeId}`);
             try {
-                const response = await fetch(`https://btldbs-api.onrender.com/api/nhanvien/${employeeId}`, {
+                const response = await fetch(`${API_BASE}/nhanvien/${employeeId}`, {
                     method: 'DELETE'
                 });
 
@@ -637,11 +451,11 @@ async function openTab(tabName) {
                 }
                 console.log(`Employee with ID ${employeeId} deleted successfully.`);
 
-                fetchEmployees(); // Refresh the table
-                alert(`Đã xóa nhân viên có ID ${String(employeeId).padStart(6, '0')}!`); // Using alert as a simple fallback
+                fetchEmployees();
+                alert(`Đã xóa nhân viên có ID ${String(employeeId).padStart(6, '0')}!`);
             } catch (error) {
                 console.error('Lỗi khi xóa nhân viên:', error);
-                alert('Có lỗi xảy ra khi xóa nhân viên.'); // Using alert as a simple fallback
+                alert('Có lỗi xảy ra khi xóa nhân viên.');
             }
         }
 
@@ -650,64 +464,97 @@ async function openTab(tabName) {
          * @param {HTMLElement} button - The edit button element that was clicked.
          */
         function editEmployee(button) {
-            const row = button.parentNode.parentNode;
-            const employeeData = {
-                IdNhanVien: parseInt(row.cells[0].textContent),
-                Ten: row.cells[1].textContent,
-                ChucVu: row.cells[2].textContent,
-                // When parsing from table, use the displayed format, then convert for input
-                NgayThangNamSinh: row.cells[3].textContent,
-                DiaChi: row.cells[4].textContent,
-                // Remove non-numeric characters and handle comma as decimal for salary
-                Luong: parseFloat(row.cells[5].textContent.replace(/[^0-9,.]/g,"").replace(",", ".")),
-                Tuoi: parseInt(row.cells[6].textContent),
+            const row = button.closest('tr');
+            const employee = {
+                id: row.cells[0].textContent.replace(/^0+/, ''),
+                name: row.cells[1].textContent,
+                position: row.cells[2].textContent,
+                dob: row.cells[3].textContent,
+                address: row.cells[4].textContent,
+                salary: row.cells[5].textContent
             };
-            console.log('Editing employee:', employeeData);
-            toggleEmployeeForm('edit', employeeData);
+            const form = document.getElementById('edit-employee-form-modal');
+            form.dataset.employeeId = employee.id;
+            form.dataset.oldName = employee.name;
+            form.dataset.oldPosition = employee.position;
+            form.dataset.oldDob = employee.dob;
+            form.dataset.oldAddress = employee.address;
+            form.dataset.oldSalary = employee.salary;
+            document.getElementById('edit-employee-name').value = employee.name;
+            document.getElementById('edit-employee-position').value = employee.position;
+            document.getElementById('edit-employee-dob').value = employee.dob;
+            document.getElementById('edit-employee-address').value = employee.address;
+            document.getElementById('edit-employee-salary').value = employee.salary;
+            document.getElementById('edit-employee-modal').style.display = 'flex';
+        }
+
+        function closeEditEmployeeModal() {
+            const modal = document.getElementById('edit-employee-modal');
+            modal.style.display = 'none';
+            document.getElementById('edit-employee-form-modal').reset();
         }
 
         /**
          * Fetches employee data from the API and populates the HTML table.
          */
         async function fetchEmployees() {
-            console.log('Fetching all employees from API...');
             try {
-                const response = await fetch('https://btldbs-api.onrender.com/api/nhanvien');
-                if (!response.ok) {
-                    throw new Error('Lỗi mạng hoặc không tìm thấy tài nguyên');
-                }
-                const data = await response.json();
-                console.log('Received employee data for table update:', data);
-                const employeeList = document.getElementById('employee-list');
-                employeeList.innerHTML = ''; // Clear old data
+                const response = await fetch(`${API_BASE}/nhanvien`);
+                const employees = await response.json();
+                const tbody = document.getElementById('employee-list');
+                tbody.innerHTML = '';
+                
+                employees.forEach(employee => {
+                    const row = document.createElement('tr');
+                    
+                    // ID nhân viên
+                    const idCell = document.createElement('td');
+                    idCell.textContent = employee.IdNhanVien;
+                    row.appendChild(idCell);
 
-                data.forEach(employee => {
-                    const newRow = employeeList.insertRow();
-                    const idCell = newRow.insertCell();
-                    const nameCell = newRow.insertCell();
-                    const positionCell = newRow.insertCell();
-                    const dobCell = newRow.insertCell();
-                    const addressCell = newRow.insertCell();
-                    const salaryCell = newRow.insertCell();
-                    const ageCell = newRow.insertCell();
-                    const actionsCell = newRow.insertCell();
-                    actionsCell.classList.add('action-buttons');
-
-                    idCell.textContent = String(employee.IdNhanVien).padStart(6, '0'); // Format ID here
+                    // Tên
+                    const nameCell = document.createElement('td');
                     nameCell.textContent = employee.Ten;
+                    row.appendChild(nameCell);
+
+                    // Chức vụ
+                    const positionCell = document.createElement('td');
                     positionCell.textContent = employee.ChucVu;
+                    row.appendChild(positionCell);
+
+                    // Ngày tháng năm sinh
+                    const dobCell = document.createElement('td');
                     dobCell.textContent = formatDate(employee.NgayThangNamSinh);
+                    row.appendChild(dobCell);
+
+                    // Địa chỉ
+                    const addressCell = document.createElement('td');
                     addressCell.textContent = employee.DiaChi;
-                    salaryCell.textContent = parseFloat(employee.Luong).toLocaleString('vi-VN'); // Format currency for display
-                    ageCell.textContent = employee.Tuoi;
-                    actionsCell.innerHTML = `
+                    row.appendChild(addressCell);
+
+                    // Lương
+                    const salaryCell = document.createElement('td');
+                    salaryCell.textContent = employee.Luong;
+                    row.appendChild(salaryCell);
+
+                    // Tuổi
+                    const ageCell = document.createElement('td');
+                    ageCell.textContent = calculateAge(employee.NgayThangNamSinh);
+                    row.appendChild(ageCell);
+
+                    // Nút hành động
+                    const actionCell = document.createElement('td');
+                    actionCell.className = 'action-buttons';
+                    actionCell.innerHTML = `
                         <button class="edit-button" onclick="editEmployee(this)">Sửa</button>
                         <button class="delete-button" onclick="deleteEmployee(this)">Xóa</button>
                     `;
+                    row.appendChild(actionCell);
+
+                    tbody.appendChild(row);
                 });
             } catch (error) {
-                console.error('Lỗi khi lấy dữ liệu nhân viên từ API:', error);
-                alert('Không thể tải dữ liệu nhân viên. Vui lòng thử lại sau.'); // Using alert as a simple fallback
+                console.error('Error fetching employees:', error);
             }
         }
 
@@ -737,7 +584,7 @@ async function openTab(tabName) {
             };
 
             try {
-                const response = await fetch('https://btldbs-api.onrender.com/api/sanpham', {
+                const response = await fetch(`${API_BASE}/sanpham`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -766,60 +613,46 @@ async function openTab(tabName) {
          * Handles updating an existing product in the database via API.
          */
         async function updateProduct() {
-            let id = document.getElementById('edit-product-id').value;
-            // Đảm bảo id là số nguyên, loại bỏ số 0 ở đầu nếu có
-            id = parseInt(id, 10);
-            if (!id || isNaN(id)) {
-                alert('ID sản phẩm không hợp lệ!');
-                return;
-            }
-            const name = document.getElementById('edit-product-name').value;
-            const unit = document.getElementById('edit-product-unit').value;
-            const quantity = document.getElementById('edit-product-quantity').value;
-            const purchasePrice = document.getElementById('edit-product-purchase-price').value;
-            const salePrice = document.getElementById('edit-product-sale-price').value;
-
-            if (!name || !unit || !quantity || !purchasePrice || !salePrice) {
-                alert('Vui lòng điền đầy đủ thông tin sản phẩm.');
-                return;
-            }
-
-            const updatedProduct = {
+            const form = document.getElementById('edit-product-form-modal');
+            const id = parseInt(form.dataset.productId, 10);
+            const oldName = form.dataset.oldName;
+            const oldUnit = form.dataset.oldUnit;
+            const oldQuantity = form.dataset.oldQuantity;
+            const oldPurchasePrice = form.dataset.oldPurchasePrice;
+            const oldSalePrice = form.dataset.oldSalePrice;
+            const name = document.getElementById('edit-product-name').value.trim();
+            const unit = document.getElementById('edit-product-unit').value.trim();
+            const quantity = document.getElementById('edit-product-quantity').value.trim();
+            const purchasePrice = document.getElementById('edit-product-purchase-price').value.trim();
+            const salePrice = document.getElementById('edit-product-sale-price').value.trim();
+            const finalName = name !== '' ? name : oldName;
+            const finalUnit = unit !== '' ? unit : oldUnit;
+            const finalQuantity = quantity !== '' ? quantity : oldQuantity;
+            const finalPurchasePrice = purchasePrice !== '' ? purchasePrice : oldPurchasePrice;
+            const finalSalePrice = salePrice !== '' ? salePrice : oldSalePrice;
+            const body = {
                 MaSanPham: id,
-                TenSanPham: name,
-                DonViTinh: unit,
-                SoLuong: parseInt(quantity),
-                GiaTienNhap: parseFloat(purchasePrice),
-                GiaTienBan: parseFloat(salePrice)
+                TenSanPham: finalName,
+                DonViTinh: finalUnit,
+                SoLuong: parseInt(finalQuantity),
+                GiaTienNhap: parseFloat(finalPurchasePrice),
+                GiaTienBan: parseFloat(finalSalePrice)
             };
-
-            // Log chi tiết để debug
-            console.log('PUT URL:', `https://btldbs-api.onrender.com/api/sanpham/${id}`);
-            console.log('PUT body:', updatedProduct);
-
             try {
-                const response = await fetch(`https://btldbs-api.onrender.com/api/sanpham/${id}`, {
+                const response = await fetch(`${API_BASE}/sanpham/${id}`, {
                     method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(updatedProduct)
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
                 });
-
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(`Lỗi cập nhật sản phẩm: ${response.status} - ${errorText}`);
+                const resText = await response.text();
+                if (response.ok) {
+                    await fetchProducts();
+                    closeEditProductModal();
+                } else {
+                    alert('Có lỗi xảy ra khi cập nhật sản phẩm: ' + resText);
                 }
-
-                const result = await response.json();
-                console.log('Product updated successfully:', result);
-
-                fetchProducts();
-                toggleProductForm();
-                alert('Cập nhật sản phẩm thành công!');
             } catch (error) {
-                console.error('Lỗi khi cập nhật sản phẩm:', error);
-                alert('Lỗi khi cập nhật sản phẩm: ' + error.message);
+                alert('Có lỗi xảy ra khi cập nhật sản phẩm!');
             }
         }
 
@@ -833,7 +666,7 @@ async function openTab(tabName) {
 
             console.log(`Attempting to delete product with ID: ${productId}`);
             try {
-                const response = await fetch(`https://btldbs-api.onrender.com/api/sanpham/${productId}`, {
+                const response = await fetch(`${API_BASE}/sanpham/${productId}`, {
                     method: 'DELETE'
                 });
 
@@ -856,17 +689,34 @@ async function openTab(tabName) {
          * @param {HTMLElement} button - The edit button element that was clicked.
          */
         function editProduct(button) {
-            const row = button.parentNode.parentNode;
-            const productData = {
-                MaSanPham: parseInt(row.cells[0].textContent),
-                TenSanPham: row.cells[1].textContent,
-                DonViTinh: row.cells[2].textContent,
-                SoLuong: parseInt(row.cells[3].textContent),
-        GiaTienNhap: parseFloat(row.cells[4].textContent),
-        GiaTienBan: parseFloat(row.cells[5].textContent),
+            const row = button.closest('tr');
+            const product = {
+                id: row.cells[0].textContent.replace(/^0+/, ''),
+                name: row.cells[1].textContent,
+                unit: row.cells[2].textContent,
+                quantity: row.cells[3].textContent,
+                purchasePrice: row.cells[4].textContent,
+                salePrice: row.cells[5].textContent
             };
-            console.log('Editing product:', productData);
-            toggleProductForm('edit', productData);
+            const form = document.getElementById('edit-product-form-modal');
+            form.dataset.productId = product.id;
+            form.dataset.oldName = product.name;
+            form.dataset.oldUnit = product.unit;
+            form.dataset.oldQuantity = product.quantity;
+            form.dataset.oldPurchasePrice = product.purchasePrice;
+            form.dataset.oldSalePrice = product.salePrice;
+            document.getElementById('edit-product-name').value = product.name;
+            document.getElementById('edit-product-unit').value = product.unit;
+            document.getElementById('edit-product-quantity').value = product.quantity;
+            document.getElementById('edit-product-purchase-price').value = product.purchasePrice;
+            document.getElementById('edit-product-sale-price').value = product.salePrice;
+            document.getElementById('edit-product-modal').style.display = 'flex';
+        }
+
+        function closeEditProductModal() {
+            const modal = document.getElementById('edit-product-modal');
+            modal.style.display = 'none';
+            document.getElementById('edit-product-form-modal').reset();
         }
 
         /**
@@ -874,7 +724,7 @@ async function openTab(tabName) {
          */
         async function fetchProducts() {
             try {
-                const response = await fetch('https://btldbs-api.onrender.com/api/sanpham');
+                const response = await fetch(`${API_BASE}/sanpham`);
         const products = await response.json();
                 const productList = document.getElementById('product-list');
         productList.innerHTML = '';
@@ -923,7 +773,7 @@ async function openTab(tabName) {
             console.log('Attempting to add new customer:', newCustomer);
 
             try {
-                const response = await fetch('https://btldbs-api.onrender.com/api/khachhang', { // Assuming API endpoint for customers
+                const response = await fetch(`${API_BASE}/khachhang`, { // Assuming API endpoint for customers
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -939,8 +789,8 @@ async function openTab(tabName) {
                 console.log('Customer added successfully:', result);
 
                 fetchCustomers();
-                toggleCustomerForm('add');
-                document.getElementById('add-customer-form').reset();
+                closeAddCustomerModal();
+                // document.getElementById('add-customer-form').reset(); // Removed because inline form no longer exists
                 alert('Thêm khách hàng thành công!');
             } catch (error) {
                 console.error('Lỗi khi thêm khách hàng:', error);
@@ -952,46 +802,46 @@ async function openTab(tabName) {
          * Handles updating an existing customer in the database via API.
          */
         async function updateCustomer() {
-            const id = document.getElementById('edit-customer-id').value;
-            const name = document.getElementById('edit-customer-name').value;
-            const phone = document.getElementById('edit-customer-phone').value;
+            const form = document.getElementById('edit-customer-form-modal');
+            const id = parseInt(form.dataset.customerId, 10);
+            const oldName = form.dataset.oldName;
+            const oldPhone = form.dataset.oldPhone;
 
-            if (!name || !phone) {
-                alert('Vui lòng điền đầy đủ thông tin khách hàng.');
-                return;
-            }
+            const nameInput = document.getElementById('edit-customer-name');
+            const phoneInput = document.getElementById('edit-customer-phone');
+            const name = nameInput.value.trim();
+            const phone = phoneInput.value.trim();
 
-            const updatedCustomer = {
-                IdKhachHang: parseInt(id),
-                HoTen: name,
-                SoDienThoai: phone
+            // Nếu input rỗng thì lấy giá trị cũ, còn nếu có giá trị thì lấy giá trị mới (kể cả giống cũ)
+            const finalName = name !== '' ? name : oldName;
+            const finalPhone = phone !== '' ? phone : oldPhone;
+
+            const body = {
+                IdKhachHang: id,
+                HoTen: finalName,
+                SoDienThoai: finalPhone
             };
 
-            console.log('Attempting to update customer:', updatedCustomer);
+            console.log('PUT body:', body);
 
             try {
-                const response = await fetch(`https://btldbs-api.onrender.com/api/khachhang/${currentEditingCustomerId}`, { // Assuming API endpoint for customers
+                const response = await fetch(`${API_BASE}/khachhang/${id}`, {
                     method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(updatedCustomer)
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
                 });
 
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(`Lỗi cập nhật khách hàng: ${response.status} - ${errorText}`);
-                }
-                const result = await response.json();
-                console.log('Customer updated successfully:', result);
+                const resText = await response.text();
+                console.log('PUT response:', resText);
 
-                fetchCustomers();
-                toggleCustomerForm(); // Hide both forms
-                currentEditingCustomerId = null;
-                alert('Cập nhật khách hàng thành công!');
+                if (response.ok) {
+                    await fetchCustomers();
+                    closeEditCustomerModal();
+                } else {
+                    alert('Có lỗi xảy ra khi cập nhật khách hàng: ' + resText);
+                }
             } catch (error) {
-                console.error('Lỗi khi cập nhật khách hàng:', error);
-                alert('Có lỗi xảy ra khi cập nhật khách hàng.');
+                alert('Có lỗi xảy ra khi cập nhật khách hàng!');
             }
         }
 
@@ -1005,7 +855,7 @@ async function openTab(tabName) {
 
             console.log(`Attempting to delete customer with ID: ${customerId}`);
             try {
-                const response = await fetch(`https://btldbs-api.onrender.com/api/khachhang/${customerId}`, { // Assuming API endpoint for customers
+                const response = await fetch(`${API_BASE}/khachhang/${customerId}`, { // Assuming API endpoint for customers
                     method: 'DELETE'
                 });
 
@@ -1028,14 +878,30 @@ async function openTab(tabName) {
          * @param {HTMLElement} button - The edit button element that was clicked.
          */
         function editCustomer(button) {
-            const row = button.parentNode.parentNode;
-            const customerData = {
-                IdKhachHang: parseInt(row.cells[0].textContent),
-                HoTen: row.cells[1].textContent,
-                SoDienThoai: row.cells[2].textContent,
+            const row = button.closest('tr');
+            const customer = {
+                id: row.cells[0].textContent.replace(/^0+/, ''), // bỏ số 0 ở đầu
+                name: row.cells[1].textContent,
+                phone: row.cells[2].textContent
             };
-            console.log('Editing customer:', customerData);
-            toggleCustomerForm('edit', customerData);
+
+            const form = document.getElementById('edit-customer-form-modal');
+            // Lưu giá trị cũ vào data attribute
+            form.dataset.customerId = customer.id;
+            form.dataset.oldName = customer.name;
+            form.dataset.oldPhone = customer.phone;
+
+            // Hiển thị giá trị cũ lên form
+            document.getElementById('edit-customer-name').value = customer.name;
+            document.getElementById('edit-customer-phone').value = customer.phone;
+
+            document.getElementById('edit-customer-modal').style.display = 'flex';
+        }
+
+        function closeEditCustomerModal() {
+            const modal = document.getElementById('edit-customer-modal');
+            modal.style.display = 'none';
+            document.getElementById('edit-customer-form-modal').reset();
         }
 
         /**
@@ -1044,7 +910,7 @@ async function openTab(tabName) {
         async function fetchCustomers() {
             console.log('Fetching all customers from API...');
             try {
-                const response = await fetch('https://btldbs-api.onrender.com/api/khachhang'); // Assuming API endpoint for customers
+                const response = await fetch(`${API_BASE}/khachhang`); // Assuming API endpoint for customers
                 if (!response.ok) {
                     throw new Error('Lỗi mạng hoặc không tìm thấy tài nguyên');
                 }
@@ -1084,43 +950,36 @@ async function openTab(tabName) {
             const phone = document.getElementById('new-supplier-phone').value;
             const email = document.getElementById('new-supplier-email').value;
 
-            if (!id || !companyName || !phone || !email) {
-                alert('Vui lòng điền đầy đủ thông tin nhà cung cấp.');
+            if (!companyName || !phone || !email) {
+                alert('Vui lòng điền đầy đủ thông tin!');
                 return;
             }
 
-            const newSupplier = {
-                IdNhaCungCap: parseInt(id),
-                TenCongTy: companyName,
-                SoDienThoai: phone,
-                Email: email
-            };
-
-            console.log('Attempting to add new supplier:', newSupplier);
-
             try {
-                const response = await fetch('https://btldbs-api.onrender.com/api/nhacungcap', { // Assuming API endpoint for suppliers
+                const response = await fetch(`${API_BASE}/nhacungcap`, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify(newSupplier)
+                    body: JSON.stringify({
+                        IdNhaCungCap: parseInt(id),
+                        TenCongTy: companyName,
+                        SoDienThoai: phone,
+                        Email: email
+                    })
                 });
 
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(`Lỗi thêm nhà cung cấp: ${response.status} - ${errorText}`);
-                }
-                const result = await response.json();
-                console.log('Supplier added successfully:', result);
-
+                if (response.ok) {
+                    closeAddSupplierModal();
                 fetchSuppliers();
-                toggleSupplierForm('add');
-                document.getElementById('add-supplier-form').reset();
                 alert('Thêm nhà cung cấp thành công!');
+                } else {
+                    const error = await response.json();
+                    alert('Lỗi: ' + error.error);
+                }
             } catch (error) {
-                console.error('Lỗi khi thêm nhà cung cấp:', error);
-                alert('Có lỗi xảy ra khi thêm nhà cung cấp.');
+                console.error('Error adding supplier:', error);
+                alert('Có lỗi xảy ra khi thêm nhà cung cấp!');
             }
         }
 
@@ -1128,48 +987,38 @@ async function openTab(tabName) {
          * Handles updating an existing supplier in the database via API.
          */
         async function updateSupplier() {
-            const id = document.getElementById('edit-supplier-id').value;
-            const companyName = document.getElementById('edit-supplier-company-name').value;
-            const phone = document.getElementById('edit-supplier-phone').value;
-            const email = document.getElementById('edit-supplier-email').value;
-
-            if (!companyName || !phone || !email) {
-                alert('Vui lòng điền đầy đủ thông tin nhà cung cấp.');
-                return;
-            }
-
-            const updatedSupplier = {
-                IdNhaCungCap: parseInt(id),
-                TenCongTy: companyName,
-                SoDienThoai: phone,
-                Email: email
+            const form = document.getElementById('edit-supplier-form-modal');
+            const id = parseInt(form.dataset.supplierId, 10);
+            const oldCompanyName = form.dataset.oldCompanyName;
+            const oldPhone = form.dataset.oldPhone;
+            const oldEmail = form.dataset.oldEmail;
+            const companyName = document.getElementById('edit-supplier-company-name').value.trim();
+            const phone = document.getElementById('edit-supplier-phone').value.trim();
+            const email = document.getElementById('edit-supplier-email').value.trim();
+            const finalCompanyName = companyName !== '' ? companyName : oldCompanyName;
+            const finalPhone = phone !== '' ? phone : oldPhone;
+            const finalEmail = email !== '' ? email : oldEmail;
+            const body = {
+                IdNhaCungCap: id,
+                TenCongTy: finalCompanyName,
+                SoDienThoai: finalPhone,
+                Email: finalEmail
             };
-
-            console.log('Attempting to update supplier:', updatedSupplier);
-
             try {
-                const response = await fetch(`https://btldbs-api.onrender.com/api/nhacungcap/${currentEditingSupplierId}`, { // Assuming API endpoint for suppliers
+                const response = await fetch(`${API_BASE}/nhacungcap/${id}`, {
                     method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(updatedSupplier)
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
                 });
-
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(`Lỗi cập nhật nhà cung cấp: ${response.status} - ${errorText}`);
+                const resText = await response.text();
+                if (response.ok) {
+                    await fetchSuppliers();
+                    closeEditSupplierModal();
+                } else {
+                    alert('Có lỗi xảy ra khi cập nhật nhà cung cấp: ' + resText);
                 }
-                const result = await response.json();
-                console.log('Supplier updated successfully:', result);
-
-                fetchSuppliers();
-                toggleSupplierForm(); // Hide both forms
-                currentEditingSupplierId = null;
-                alert('Cập nhật nhà cung cấp thành công!');
             } catch (error) {
-                console.error('Lỗi khi cập nhật nhà cung cấp:', error);
-                alert('Có lỗi xảy ra khi cập nhật nhà cung cấp.');
+                alert('Có lỗi xảy ra khi cập nhật nhà cung cấp!');
             }
         }
 
@@ -1183,7 +1032,7 @@ async function openTab(tabName) {
 
             console.log(`Attempting to delete supplier with ID: ${supplierId}`);
             try {
-                const response = await fetch(`https://btldbs-api.onrender.com/api/nhacungcap/${supplierId}`, { // Assuming API endpoint for suppliers
+                const response = await fetch(`${API_BASE}/nhacungcap/${supplierId}`, { // Assuming API endpoint for suppliers
                     method: 'DELETE'
                 });
 
@@ -1206,15 +1055,28 @@ async function openTab(tabName) {
          * @param {HTMLElement} button - The edit button element that was clicked.
          */
         function editSupplier(button) {
-            const row = button.parentNode.parentNode;
-            const supplierData = {
-                IdNhaCungCap: parseInt(row.cells[0].textContent),
-                TenCongTy: row.cells[1].textContent,
-                SoDienThoai: row.cells[2].textContent,
-                Email: row.cells[3].textContent,
+            const row = button.closest('tr');
+            const supplier = {
+                id: row.cells[0].textContent.replace(/^0+/, ''),
+                companyName: row.cells[1].textContent,
+                phone: row.cells[2].textContent,
+                email: row.cells[3].textContent
             };
-            console.log('Editing supplier:', supplierData);
-            toggleSupplierForm('edit', supplierData);
+            const form = document.getElementById('edit-supplier-form-modal');
+            form.dataset.supplierId = supplier.id;
+            form.dataset.oldCompanyName = supplier.companyName;
+            form.dataset.oldPhone = supplier.phone;
+            form.dataset.oldEmail = supplier.email;
+            document.getElementById('edit-supplier-company-name').value = supplier.companyName;
+            document.getElementById('edit-supplier-phone').value = supplier.phone;
+            document.getElementById('edit-supplier-email').value = supplier.email;
+            document.getElementById('edit-supplier-modal').style.display = 'flex';
+        }
+
+        function closeEditSupplierModal() {
+            const modal = document.getElementById('edit-supplier-modal');
+            modal.style.display = 'none';
+            document.getElementById('edit-supplier-form-modal').reset();
         }
 
         /**
@@ -1223,7 +1085,7 @@ async function openTab(tabName) {
         async function fetchSuppliers() {
             console.log('Fetching all suppliers from API...');
             try {
-                const response = await fetch('https://btldbs-api.onrender.com/api/nhacungcap'); // Assuming API endpoint for suppliers
+                const response = await fetch(`${API_BASE}/nhacungcap`); // Assuming API endpoint for suppliers
                 if (!response.ok) {
                     throw new Error('Lỗi mạng hoặc không tìm thấy tài nguyên');
                 }
@@ -1262,7 +1124,7 @@ async function openTab(tabName) {
 async function populateInvoiceDropdowns() {
     // Lấy danh sách khách hàng
     try {
-        const res = await fetch('https://btldbs-api.onrender.com/api/khachhang');
+        const res = await fetch(`${API_BASE}/khachhang`);
         invoiceCustomersCache = await res.json();
     } catch {
         invoiceCustomersCache = [];
@@ -1272,7 +1134,7 @@ async function populateInvoiceDropdowns() {
     const employeeSelect = document.getElementById('invoice-employee-id');
     employeeSelect.innerHTML = '<option value="">-- Chọn nhân viên --</option>';
     try {
-        const res = await fetch('https://btldbs-api.onrender.com/api/nhanvien');
+        const res = await fetch(`${API_BASE}/nhanvien`);
         const employees = await res.json();
         employees.forEach(e => {
             const option = document.createElement('option');
@@ -1285,7 +1147,7 @@ async function populateInvoiceDropdowns() {
 
 async function populateProductDropdown() {
     try {
-        const response = await fetch('https://btldbs-api.onrender.com/api/sanpham');
+        const response = await fetch(`${API_BASE}/sanpham`);
         productsCache = await response.json();
 
         const productSelect = document.querySelector('.product-select');
@@ -1322,6 +1184,12 @@ async function addChiTietHoaDonItem() {
     const product = productsCache.find(p => p.MaSanPham === productId);
     if (!product) {
         alert('Không tìm thấy sản phẩm!');
+        return;
+    }
+
+    // Kiểm tra số lượng tồn kho
+    if (quantity > product.SoLuong) {
+        alert(`Số lượng trong kho chỉ còn ${product.SoLuong}. Không thể bán vượt quá số lượng này!`);
         return;
     }
     
@@ -1396,7 +1264,7 @@ async function saveInvoice() {
 
     try {
         // Save HoaDon
-        const hoadonResponse = await fetch('https://btldbs-api.onrender.com/api/hoadon', {
+        const hoadonResponse = await fetch(`${API_BASE}/hoadon`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -1421,7 +1289,7 @@ async function saveInvoice() {
             const donGia = parseFloat(row.cells[3].textContent.replace(/[^0-9.-]/g, ''));
 
             // 1. Lưu chi tiết hóa đơn
-            const chiTietResponse = await fetch('https://btldbs-api.onrender.com/api/chitiethoadon', {
+            const chiTietResponse = await fetch(`${API_BASE}/chitiethoadon`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -1441,7 +1309,7 @@ async function saveInvoice() {
             // 2. Lấy sản phẩm hiện tại từ API
             let product = null;
             try {
-                const prodRes = await fetch(`https://btldbs-api.onrender.com/api/sanpham/${maSanPham}`);
+                const prodRes = await fetch(`${API_BASE}/sanpham/${maSanPham}`);
                 if (prodRes.ok) product = await prodRes.json();
             } catch {}
             if (product) {
@@ -1461,7 +1329,7 @@ async function saveInvoice() {
                     console.log(`updatedProduct[${key}] =`, updatedProduct[key], '| typeof:', typeof updatedProduct[key]);
                 });
                 console.log('PUT cập nhật sản phẩm:', updatedProduct);
-                await fetch(`https://btldbs-api.onrender.com/api/sanpham/${product.MaSanPham}`, {
+                await fetch(`${API_BASE}/sanpham/${product.MaSanPham}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json'
@@ -1497,7 +1365,7 @@ async function resetInvoiceForm() {
 
 async function generateNextInvoiceId() {
     try {
-        const res = await fetch('https://btldbs-api.onrender.com/api/hoadon');
+        const res = await fetch(`${API_BASE}/hoadon`);
         const invoices = await res.json();
         let maxId = 0;
         invoices.forEach(inv => {
@@ -1544,7 +1412,7 @@ async function generateNextInvoiceId() {
 async function deleteInvoice(maDon) {
     if (!confirm(`Bạn có chắc chắn muốn xóa hóa đơn có mã ${String(maDon).padStart(6, '0')}?`)) return;
     try {
-        const response = await fetch(`https://btldbs-api.onrender.com/api/hoadon/${maDon}`, {
+        const response = await fetch(`${API_BASE}/hoadon/${maDon}`, {
             method: 'DELETE'
         });
         if (!response.ok) {
@@ -1565,9 +1433,10 @@ async function deleteInvoice(maDon) {
 }
 async function fetchInvoices() {
     try {
-        const res = await fetch('https://btldbs-api.onrender.com/api/hoadon');
-        const data = await res.json();
-        console.log(data);
+        const res = await fetch(`${API_BASE}/hoadon`);
+        let data = await res.json();
+        // Sắp xếp theo MaDon giảm dần (mới nhất trước)
+        data.sort((a, b) => Number(b.MaDon) - Number(a.MaDon));
         const invoiceList = document.getElementById('invoice-list');
         invoiceList.innerHTML = '';
         data.forEach(inv => {
@@ -1599,10 +1468,16 @@ async function showInvoiceDetail(maDon) {
     const contentDiv = document.getElementById('invoice-detail-content');
     contentDiv.innerHTML = '<div style="text-align:center; color:#1976d2;">Đang tải chi tiết...</div>';
     try {
-        const res = await fetch(`https://btldbs-api.onrender.com/api/chitiethoadon?madon=${maDon}`);
+        const res = await fetch(`${API_BASE}/chitiethoadon?madon=${maDon}`);
         if (!res.ok) throw new Error('Failed to fetch invoice details');
         let details = await res.json();
         details = details.filter(item => item.MaDon == maDon);
+
+        // Đảm bảo productsCache đã có dữ liệu
+        if (!productsCache || productsCache.length === 0) {
+            const prodRes = await fetch(`${API_BASE}/sanpham`);
+            productsCache = await prodRes.json();
+        }
 
         if (!details || details.length === 0) {
             contentDiv.innerHTML = '<div style="color:#d32f2f;">Không có chi tiết hóa đơn.</div>';
@@ -1636,7 +1511,7 @@ async function populateImportDropdowns() {
     const supplierSelect = document.getElementById('import-supplier-id');
     supplierSelect.innerHTML = '<option value="">-- Chọn nhà cung cấp --</option>';
     try {
-        const res = await fetch('https://btldbs-api.onrender.com/api/nhacungcap');
+        const res = await fetch(`${API_BASE}/nhacungcap`);
         const suppliers = await res.json();
         suppliers.forEach(sup => {
             const option = document.createElement('option');
@@ -1649,7 +1524,7 @@ async function populateImportDropdowns() {
     const employeeSelect = document.getElementById('import-employee-id');
     employeeSelect.innerHTML = '<option value="">-- Chọn nhân viên --</option>';
     try {
-        const res = await fetch('https://btldbs-api.onrender.com/api/nhanvien');
+        const res = await fetch(`${API_BASE}/nhanvien`);
         const employees = await res.json();
         employees.forEach(e => {
             const option = document.createElement('option');
@@ -1663,7 +1538,7 @@ async function populateImportDropdowns() {
     productSelect.innerHTML = '<option value="">-- Chọn sản phẩm --</option>';
     let products = [];
     try {
-        const res = await fetch('https://btldbs-api.onrender.com/api/sanpham');
+        const res = await fetch(`${API_BASE}/sanpham`);
         products = await res.json();
         products.forEach(p => {
             const option = document.createElement('option');
@@ -1713,21 +1588,30 @@ async function populateImportDropdowns() {
 
 async function generateNextImportId() {
     try {
-        const res = await fetch('https://btldbs-api.onrender.com/api/donnhaphang');
+        console.log('Generating next import ID...');
+        const res = await fetch(`${API_BASE}/donnhaphang`);
+        if (!res.ok) {
+            console.error('Failed to fetch import orders:', res.status);
+            return '000001';
+        }
         const orders = await res.json();
+        console.log('Orders for import:', orders); // Log để debug
         let maxId = 0;
         orders.forEach(o => {
             const idNum = parseInt(o.MaDon, 10);
             if (!isNaN(idNum) && idNum > maxId) maxId = idNum;
         });
-        return String(maxId + 1).padStart(6, '0');
-    } catch {
+        const nextId = String(maxId + 1).padStart(6, '0');
+        console.log('Next generated import ID:', nextId);
+        return nextId;
+    } catch (e) {
+        console.error('Error generating next import id:', e);
         return '000001';
     }
 }
 
 async function addChiTietNhapHangItem() {
-                         const productSelect = document.querySelector('.import-product-select');
+             const productSelect = document.querySelector('.import-product-select');
     const quantityInput = document.querySelector('.import-quantity');
     const priceInput = document.querySelector('.import-price');
     const productId = productSelect.value;
@@ -1754,7 +1638,7 @@ async function addChiTietNhapHangItem() {
         // Tạo sản phẩm mới qua API, set SoLuong = quantity
         let newId = 1;
         try {
-            const res = await fetch('https://btldbs-api.onrender.com/api/sanpham');
+            const res = await fetch(`${API_BASE}/sanpham`);
             const products = await res.json();
             if (products.length > 0) {
                 newId = Math.max(...products.map(p => p.MaSanPham)) + 1;
@@ -1769,7 +1653,7 @@ async function addChiTietNhapHangItem() {
             GiaTienBan: parseFloat(giaBan)
         };
         try {
-            const res = await fetch('https://btldbs-api.onrender.com/api/sanpham', {
+            const res = await fetch(`${API_BASE}/sanpham`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(newProduct)
@@ -1786,7 +1670,7 @@ async function addChiTietNhapHangItem() {
         maSanPham = parseInt(productId);
         // Lấy tên sản phẩm
         try {
-            const res = await fetch('https://btldbs-api.onrender.com/api/sanpham');
+            const res = await fetch(`${API_BASE}/sanpham`);
             const products = await res.json();
             const prod = products.find(p => p.MaSanPham === maSanPham);
             if (prod) {
@@ -1860,7 +1744,7 @@ async function saveImportOrder() {
     }
     try {
         // Lưu DonNhapHang
-        const donNhapResponse = await fetch('https://btldbs-api.onrender.com/api/donnhaphang', {
+        const donNhapResponse = await fetch(`${API_BASE}/donnhaphang`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -1878,7 +1762,7 @@ async function saveImportOrder() {
             const soLuong = parseInt(row.cells[2].textContent);
             const donGia = parseFloat(row.cells[3].textContent.replace(/[^0-9.-]/g, ''));
             // 1. Lưu chi tiết nhập hàng
-            const chiTietResponse = await fetch('https://btldbs-api.onrender.com/api/chitietnhaphang', {
+            const chiTietResponse = await fetch(`${API_BASE}/chitietnhaphang`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -1892,7 +1776,7 @@ async function saveImportOrder() {
             // 2. Lấy sản phẩm hiện tại
             let product = null;
             try {
-                const prodRes = await fetch(`https://btldbs-api.onrender.com/api/sanpham/${maSanPham}`);
+                const prodRes = await fetch(`${API_BASE}/sanpham/${maSanPham}`);
                 if (prodRes.ok) product = await prodRes.json();
             } catch {}
             // Nếu là sản phẩm mới (isNewProduct), không cộng thêm số lượng nữa
@@ -1915,7 +1799,7 @@ async function saveImportOrder() {
                     console.log(`updatedProduct[${key}] =`, updatedProduct[key], '| typeof:', typeof updatedProduct[key]);
                 });
                 console.log('PUT cập nhật sản phẩm:', updatedProduct);
-                await fetch(`https://btldbs-api.onrender.com/api/sanpham/${product.MaSanPham}`, {
+                await fetch(`${API_BASE}/sanpham/${product.MaSanPham}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json'
@@ -1936,8 +1820,10 @@ async function saveImportOrder() {
 
 async function fetchImportOrders() {
     try {
-        const res = await fetch('https://btldbs-api.onrender.com/api/donnhaphang');
+        const res = await fetch(`${API_BASE}/donnhaphang`);
         const data = await res.json();
+        // Sắp xếp theo MaDon giảm dần (mới nhất trước)
+        data.sort((a, b) => Number(b.MaDon) - Number(a.MaDon));
         const tableBody = document.getElementById('import-order-list');
         tableBody.innerHTML = '';
         data.forEach(order => {
@@ -1967,7 +1853,7 @@ async function fetchImportOrders() {
 async function deleteImportOrder(maDon) {
     if (!confirm(`Bạn có chắc chắn muốn xóa phiếu nhập có mã ${String(maDon).padStart(6, '0')}?`)) return;
     try {
-        const response = await fetch(`https://btldbs-api.onrender.com/api/donnhaphang/${maDon}`, {
+        const response = await fetch(`${API_BASE}/donnhaphang/${maDon}`, {
             method: 'DELETE'
         });
         if (!response.ok) {
@@ -1996,12 +1882,12 @@ function closeImportDetailModal() {
 async function showImportOrderDetail(maDon) {
     try {
         // Lấy toàn bộ chi tiết nhập hàng
-        const response = await fetch('https://btldbs-api.onrender.com/api/chitietnhaphang');
+        const response = await fetch(`${API_BASE}/chitietnhaphang`);
         const chiTietList = await response.json();
         const chiTietDonNhap = chiTietList.filter(item => item.MaDon === maDon);
 
         // Lấy toàn bộ sản phẩm
-        const spRes = await fetch('https://btldbs-api.onrender.com/api/sanpham');
+        const spRes = await fetch(`${API_BASE}/sanpham`);
         const spList = await spRes.json();
 
         let content = `
@@ -2044,11 +1930,208 @@ async function showImportOrderDetail(maDon) {
     }
 }
 
-// --- Sidebar active state ---
-document.querySelectorAll('.sidebar-btn').forEach(btn => {
-  btn.addEventListener('click', function() {
-    document.querySelectorAll('.sidebar-btn').forEach(b => b.classList.remove('active'));
-    this.classList.add('active');
-    // Gọi openTab hoặc logic chuyển tab ở đây
-  });
-});
+// Statistics Functions
+async function updateStatistics() {
+    const startDate = document.getElementById('stat-start-date').value;
+    const endDate = document.getElementById('stat-end-date').value;
+
+    if (!startDate || !endDate) {
+        alert('Vui lòng chọn khoảng thời gian');
+        return;
+    }
+
+    try {
+        // Fetch statistics data
+        const response = await fetch(`${API_BASE}/statistics?start_date=${startDate}&end_date=${endDate}`);
+        const data = await response.json();
+
+        // Update statistics cards
+        document.getElementById('total-revenue').textContent = formatCurrency(data.total_revenue);
+        document.getElementById('total-import-cost').textContent = formatCurrency(data.total_import_cost);
+        document.getElementById('total-profit').textContent = formatCurrency(data.total_profit);
+        document.getElementById('total-orders').textContent = data.total_orders;
+        document.getElementById('total-customers').textContent = data.total_customers;
+        document.getElementById('total-suppliers').textContent = data.total_suppliers;
+
+        // Update top products table
+        const topProductsList = document.getElementById('top-products-list');
+        topProductsList.innerHTML = '';
+
+        data.top_products.forEach(product => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${product.MaSanPham}</td>
+                <td>${product.TenSanPham}</td>
+                <td>${product.DonViTinh}</td>
+                <td>${product.SoLuongDaBan}</td>
+                <td>${formatCurrency(product.DonGiaHienTai)}</td>
+                <td>${formatCurrency(product.DoanhThu)}</td>
+            `;
+            topProductsList.appendChild(row);
+        });
+    } catch (error) {
+        console.error('Error fetching statistics:', error);
+        alert('Có lỗi xảy ra khi tải dữ liệu thống kê');
+    }
+}
+
+function formatCurrency(amount) {
+    return new Intl.NumberFormat('vi-VN', {
+        style: 'currency',
+        currency: 'VND'
+    }).format(amount);
+}
+
+// Initialize statistics tab
+async function initializeStatistics() {
+    // Set default date range (last 30 days)
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - 30);
+
+    document.getElementById('stat-start-date').value = formatDateForInput(startDate.toISOString());
+    document.getElementById('stat-end-date').value = formatDateForInput(endDate.toISOString());
+
+    // Load initial statistics
+    await updateStatistics();
+}
+
+function closeAddEmployeeModal() {
+    const modal = document.getElementById('add-employee-modal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.getElementById('add-employee-form-modal').reset();
+    }
+}
+
+function closeAddProductModal() {
+    const modal = document.getElementById('add-product-modal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.getElementById('add-product-form-modal').reset();
+    }
+}
+
+function closeAddSupplierModal() {
+    const modal = document.getElementById('add-supplier-modal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.getElementById('add-supplier-form-modal').reset();
+    }
+}
+
+// --- Thêm logic kiểm tra số điện thoại khách hàng khi nhập ở tab hóa đơn ---
+function showAddCustomerModal(phone) {
+    let modal = document.getElementById('add-customer-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'add-customer-modal';
+        modal.className = 'modal';
+        document.body.appendChild(modal);
+    }
+    // Luôn render lại nội dung modal để đảm bảo có phần tử modal-customer-phone
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width:400px;">
+            <span class="close" onclick="closeAddCustomerModal()">&times;</span>
+            <h3>Khách hàng không tồn tại</h3>
+            <p>Bạn có muốn thêm khách hàng mới với số điện thoại <b id="modal-customer-phone"></b> không?</p>
+            <div style="text-align:right; margin-top:18px;">
+                <button id="btn-cancel-add-customer" style="margin-right:10px; background:#e3f2fd; color:#1976d2; border:1.5px solid #90caf9; border-radius:20px; padding:8px 18px; font-weight:500;">Không</button>
+                <button id="btn-confirm-add-customer" style="background:#1976d2; color:#fff; border:none; border-radius:20px; padding:8px 18px; font-weight:500;">Có</button>
+            </div>
+        </div>
+    `;
+    // Đảm bảo phần tử đã có trong DOM trước khi gán textContent
+    const phoneSpan = document.getElementById('modal-customer-phone');
+    if (phoneSpan) phoneSpan.textContent = phone;
+    modal.style.display = 'flex';
+
+    // Gán lại sự kiện cho nút (vì innerHTML vừa bị render lại)
+    document.getElementById('btn-cancel-add-customer').onclick = closeAddCustomerModal;
+    document.getElementById('btn-confirm-add-customer').onclick = function() {
+        addCustomerFromInvoice(phone);
+    };
+}
+
+// Đảm bảo sự kiện nhập SĐT khách hàng ở tab hóa đơn luôn hoạt động
+(function() {
+    document.addEventListener('DOMContentLoaded', () => {
+        const phoneInput = document.getElementById('invoice-customer-phone');
+        const infoDiv = document.getElementById('customer-info');
+        let lastPhoneChecked = '';
+        if (phoneInput && infoDiv) {
+            phoneInput.addEventListener('input', function () {
+                const value = this.value.trim();
+                // Chỉ xử lý khi đủ 10 số
+                if (!/^\d{10}$/.test(value)) {
+                    infoDiv.innerHTML = '';
+                    infoDiv.dataset.id = '';
+                    lastPhoneChecked = '';
+                    return;
+                }
+                const found = invoiceCustomersCache.find(c => c.SoDienThoai === value);
+                if (found) {
+                    infoDiv.innerHTML = `
+                        <b>Thông tin khách hàng:</b><br>
+                        ID: ${String(found.IdKhachHang).padStart(6, '0')}<br>
+                        Họ tên: ${found.HoTen}<br>
+                        SĐT: ${found.SoDienThoai}
+                    `;
+                    infoDiv.dataset.id = found.IdKhachHang;
+                    lastPhoneChecked = value;
+                } else {
+                    infoDiv.innerHTML = '<span style="color:#d32f2f;">Không tìm thấy khách hàng</span>';
+                    infoDiv.dataset.id = '';
+                    // Chỉ hiện popup nếu số khác với lần trước
+                    if (lastPhoneChecked !== value) {
+                        showAddCustomerModal(value);
+                        lastPhoneChecked = value;
+                    }
+                }
+            });
+        }
+    });
+})();
+
+function waitForElement(selector, callback, timeout = 2000) {
+    const start = Date.now();
+    (function check() {
+        const el = document.querySelector(selector);
+        if (el) return callback(el);
+        if (Date.now() - start > timeout) return; // timeout
+        setTimeout(check, 50);
+    })();
+}
+
+function addCustomerFromInvoice(phone) {
+    closeAddCustomerModal();
+    openTab('khachhang');
+    waitForElement('#new-customer-id', async () => {
+        await toggleCustomerForm('add');
+        const phoneInput = document.getElementById('new-customer-phone');
+        if (phoneInput) {
+            phoneInput.value = phone;
+            phoneInput.dispatchEvent(new Event('input'));
+        }
+        const nameInput = document.getElementById('new-customer-name');
+        if (nameInput) nameInput.focus();
+        // Sau khi lưu khách hàng, tự động quay lại tab hóa đơn và chọn khách hàng vừa thêm
+        const addBtn = document.querySelector('#add-customer-form-modal button[type="button"]');
+        if (addBtn) {
+            addBtn.onclick = async function() {
+                await addCustomer();
+                // Cập nhật lại cache khách hàng
+                await populateInvoiceDropdowns();
+                // Quay lại tab hóa đơn và tự động điền lại số điện thoại
+                openTab('hoadon');
+                setTimeout(() => {
+                    const invoicePhoneInput = document.getElementById('invoice-customer-phone');
+                    if (invoicePhoneInput) {
+                        invoicePhoneInput.value = phone;
+                        invoicePhoneInput.dispatchEvent(new Event('input'));
+                    }
+                }, 300);
+            };
+        }
+    });
+}
